@@ -1,8 +1,3 @@
-// Alunos:  Lucas Marchisotti       Matricula:  172050060
-//          Marlon Silveira                     172050073
-// 3 TP AEDS 3 - Coloração de Grafos
-
-
 #include "TP.h"
 
 int main(int argc, char *argv[]){

@@ -1,7 +1,3 @@
-// Alunos:  Lucas Marchisotti       Matricula:  172050060
-//          Marlon Silveira                     172050073
-// 3 TP AEDS 3 - Coloração de Grafos
-
 #include<stdio.h>
 #include<stdlib.h>
 #include<time.h>
@@ -10,14 +6,6 @@
 #include<sys/time.h>
 #include<sys/resource.h>
 #include<unistd.h>
-#include<pthread.h>
-
-#define nthreads 2
-
-typedef struct {
-	int inicio;
-	int fim;
-}  thread_arg, *ptr_thread_arg
 
 // Estrutura que define cada Vértice do Grafo
 typedef struct NO{
@@ -44,7 +32,7 @@ VERTICE *Leitura(char *string);
 int CLR_HEURISTICA(VERTICE *GRAFO);
 int CLR_SEQUENCIAL(VERTICE *GRAFO);
 void CLR_BACKTRACK(VERTICE *GRAFO);
-void Backtracking(VERTICE *GRAFO, int k);
+void Backtracking(VERTICE *GRAFO, int k, int N);
 int Seguro(VERTICE *GRAFO, int k, int c);
 void Argumentos (int argc, char *argv[]);
 void Imprimir_usuario (struct timeval start, struct timeval tend);

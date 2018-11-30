@@ -1,8 +1,4 @@
-// Alunos:  Lucas Marchisotti       Matricula:  172050060
-//          Marlon Silveira                     172050073
-// 3 TP AEDS 3 - Coloração de Grafos
-
-#include "TP.h"                                  // markzoti ursão
+#include "TP.h"
 
 VERTICE criaVertice(int id){                    // Onde é feita a inicialização de cada vértice
 
@@ -171,36 +167,49 @@ void CLR_BACKTRACK(VERTICE *GRAFO){     // Algoritmo de força bruta guloso que 
 // o menor valor cromático possível. A coloração com Backtracking utiliza a mesma estratégia da Heurística Sequencial, porém é replicando o
 // mesmo comportamento da Heurística Sequencial para todos os caminhos possíveis.
 
-    cormax = 9999; // Variável Global que receberá o valor mínimo cromático do grafo
-    Backtracking(GRAFO,0);             // Função recursiva que faz as paradas
+    cormax = max_arestas; // Variável Global que receberá o valor mínimo cromático do grafo
+    int N = 1;
+    Backtracking(GRAFO,0,N);             // Função recursiva que faz as paradas
     printf ("\nCor Mínima: Coloração Backtracking = %d\n", cormax);
 
 }
-void Backtracking(VERTICE *GRAFO, int k){   
+void Backtracking(VERTICE *GRAFO, int k, int N){   
     int cor;
+    int c;
 
-    for (int c = 1; c <= cormax+1; c++){                // Laço de "c" que vai até cormax ( dado inicialmente como 9999+1, porém é reduzido
-// a medida que vai encontrando colorações menores, funcionando como uma poda...)
+    if (k == 0){
+        c = N;
+    }
+    else{
+        c = 1;
+    }
+    while(c <= cormax+1){
+    // for (c = N; c <= cormax+1; c++){                // Laço de "c" que vai até cormax ( dado inicialmente como max_arestas+1, porém é reduzido
+    // a medida que vai encontrando colorações menores, funcionando como uma poda...)
+        if (( N != c)&&( k == 0)){
+        return;
+        }
         if (Seguro(GRAFO, k, c) == 1){                  // Confere se este vértice pode ser colorido por "c"
             GRAFO[k]->cor = c;                          // Se passar no teste da função "Seguro", logo a cor de c é atribuida ao vértice[k]
             if ( k+1 <= numv){                          // Aqui acontece a recursividade do backtracking, se k+1 <= número de vértices,
-                Backtracking(GRAFO,k+1);                // ele entra novamente passando por referencia o próximo vértice, senão
+                Backtracking(GRAFO,k+1,c);                // ele entra novamente passando por referencia o próximo vértice, senão
             }                                           // ele retorna um passo atrás. E fica nisso até percorrer todos os caminhos possíveis.
             else{
                 cor = 0;
                 for (int i = 0; i <= numv; i++){        // Encontra a maior cor do grafo atual
-                	if (GRAFO[i]->cor > cor){
-			            cor = GRAFO[i]->cor;
-		            }
-                    // printf ("VERTICE [%d] COR[%d]\n", GRAFO[i]->id, GRAFO[i]->cor);
+                    if (GRAFO[i]->cor > cor){
+                        cor = GRAFO[i]->cor;
+                    }
+                    printf ("VERTICE [%d] COR[%d]\n", GRAFO[i]->id, GRAFO[i]->cor);
                 }
-                // printf ("\n");              
+                printf ("\n");              
                 if (cor < cormax){                      // Se a cor encontrada for menor que a cor anteriormente conhecida como menor,
                     cormax = cor;                       // define a cor atual como menor.
                 }
                 return;
             }
         }
+    c++;
     }
 }
 
