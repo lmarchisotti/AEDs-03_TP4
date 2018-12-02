@@ -3,6 +3,26 @@
 int main(int argc, char *argv[]){
     Argumentos(argc, argv);
 
+    int ID[MAXWORKERS];
+    nextRow = 1;
+    numArrived = 0;
+
+    pthread_attr_t attr;
+    pthread_t workerid[MAXWORKERS];
+
+    /* set global thread attributes */
+    pthread_attr_init(&attr);
+    pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
+
+    /* initialize mutex and condition variable */
+    pthread_mutex_init(&barrier, NULL);
+    pthread_cond_init(&go, NULL);
+
+    /* initialize mutex for cormax and bag of tasks*/
+    pthread_mutex_init(&checkcormax, NULL);
+    pthread_mutex_init(&bagLock, NULL);
+    pthread_mutex_init(&teste, NULL);
+
     struct rusage usage;                                // Struct utilizada para contagem de tempo da biblioteca #include<sys/time.h>
     
     struct timeval usu_comeco_seq, usu_fim_seq;         // Struct utilizada para marcar o começo e o fim da contagem
@@ -54,14 +74,25 @@ int main(int argc, char *argv[]){
 
     // COLORAÇÂO BACKTRACKING                           
 
-    VERTICE *CLR3 = Leitura(string_i);                  // É feito a leitura do arquivo de entrada e seu grafo resultante é 
+    CLR3 = Leitura(string_i);                           // É feito a leitura do arquivo de entrada e seu grafo resultante é 
                                                         // gravado em um vetor que será recebido pelo ponteiro CLR3
 
     getrusage(RUSAGE_SELF, &usage);                     // Função que irá fazer a contagem de tempo do usuário e do sistema
     usu_comeco_back = usage.ru_utime;                   // Inicia a contagem do tempo usuário para o Algoritmo de Coloração com Backtracking
     sis_comeco_back = usage.ru_stime;                   // Inicia a contagem do tempo sistema para o Algoritmo de Coloração com Backtracking
 
-    CLR_BACKTRACK(CLR3);                                // Algoritmo de Coloração de Grafos com Backtracking Guloso 
+    cormax = max_arestas; // Variável Global que receberá o valor mínimo cromático do grafo
+    numWorkers = MAXWORKERS;
+
+    for (int l = 0; l < numWorkers; l++){
+        ID[l] = l+1;
+        pthread_create(&workerid[l], &attr, Worker, (void*)&ID[l]);
+    }
+    for (int l = 0; l < numWorkers; l++){
+        pthread_join(workerid[l], NULL);
+    }
+    
+    printf ("\n!!!!!Cor Mínima: Coloração Backtracking = %d\n", cormax);
 
     getrusage(RUSAGE_SELF, &usage);                     // Função que irá fazer a contagem de tempo do usuário e do sistema
     usu_fim_back = usage.ru_utime;                      // Inicia a contagem do tempo usuário para o Algoritmo de Coloração Backtracking

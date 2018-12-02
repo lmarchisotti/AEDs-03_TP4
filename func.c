@@ -163,15 +163,11 @@ int CLR_SEQUENCIAL(VERTICE *GRAFO){     // Heurística de coloração gulosa que
 
     return cor;
 }
-void CLR_BACKTRACK(VERTICE *GRAFO){     // Algoritmo de força bruta guloso que encontrará todas as possíveis soluções do grafo e retornará
+void CLR_BACKTRACK(VERTICE *GRAFO, int N){     // Algoritmo de força bruta guloso que encontrará todas as possíveis soluções do grafo e retornará
 // o menor valor cromático possível. A coloração com Backtracking utiliza a mesma estratégia da Heurística Sequencial, porém é replicando o
 // mesmo comportamento da Heurística Sequencial para todos os caminhos possíveis.
-
-    cormax = max_arestas; // Variável Global que receberá o valor mínimo cromático do grafo
-    int N = 1;
     Backtracking(GRAFO,0,N);             // Função recursiva que faz as paradas
     printf ("\nCor Mínima: Coloração Backtracking = %d\n", cormax);
-
 }
 void Backtracking(VERTICE *GRAFO, int k, int N){   
     int cor;
@@ -200,12 +196,14 @@ void Backtracking(VERTICE *GRAFO, int k, int N){
                     if (GRAFO[i]->cor > cor){
                         cor = GRAFO[i]->cor;
                     }
-                    printf ("VERTICE [%d] COR[%d]\n", GRAFO[i]->id, GRAFO[i]->cor);
+                    // printf ("VERTICE [%d] COR[%d]\n", GRAFO[i]->id, GRAFO[i]->cor);
                 }
-                printf ("\n");              
+                // printf ("\n");
+                pthread_mutex_lock(&checkcormax);       /* Critical area, here we check for the maximum and minimum element */       
                 if (cor < cormax){                      // Se a cor encontrada for menor que a cor anteriormente conhecida como menor,
                     cormax = cor;                       // define a cor atual como menor.
                 }
+                pthread_mutex_unlock(&checkcormax);
                 return;
             }
         }
@@ -233,6 +231,41 @@ void Argumentos (int argc, char *argv[]){      // Esta função manipula os arqu
       strcpy(string_o, argv[i]);               // Logo a string "string_o" recebe o argumento de argv[i](saída).
     }
   }
+}
+
+void *Worker(void *arg){
+    int *myid = arg;
+    int row;
+
+#ifdef DEBUG
+printf("worker %d (pthread id %d) has started\n", myid, pthread_self());
+#endif
+
+
+    while(1){
+    /* Get task from bag */
+    pthread_mutex_lock(&bagLock);
+    
+    printf ("!!!%d\n", *myid);
+    row = nextRow;
+    printf ("???ROW = %d\n", row);
+    nextRow++;
+
+    pthread_mutex_unlock(&bagLock);
+
+    /* If we are already finished with the bag, lets break out of the while loop */    
+        if(row >= cormax){
+            printf ("$$$$ACABOU\n");
+        break;
+        }
+
+    CLR_BACKTRACK(CLR3,row);
+    }
+}
+void *funcao(void *arg){
+    int *myid = arg;
+
+    printf ("Thread %i executando\n",*myid);
 }
 
 void Imprimir_usuario (struct timeval start, struct timeval tend){                    // Função Tempo utilizando getrusage
