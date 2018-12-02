@@ -15,10 +15,11 @@
 #define MAXWORKERS 4
 // Estrutura que define cada Vértice do Grafo
 typedef struct NO{
-	char id;
+	int id;
 	int nroVizinhos;
 	struct NO **vizinhos;
 	int visitado;
+	int lock;
 	int cor;
 }*VERTICE;
 
@@ -32,6 +33,7 @@ int numWorkers;           /* number of workers */
 int numArrived;       /* number who have arrived */
 
 int nextRow;  /* Counter for our bag of task */
+int nextVertice;
 int numv;
 int cormax;
 
@@ -39,9 +41,12 @@ char string_i[40];
 char string_o[40];
 int max_arestas;
 
+VERTICE *CLR1;
 VERTICE *CLR3;
+
 void *funcao(void*arg);
 void *Worker(void *arg);
+void *Worker2(void *arg);
 VERTICE criaVertice(int id);
 void ligaVertices(VERTICE v1, VERTICE v2);
 void Shellsort (VERTICE *vet, int tam);

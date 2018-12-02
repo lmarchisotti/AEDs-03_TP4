@@ -7,6 +7,7 @@ VERTICE criaVertice(int id){                    // Onde é feita a inicializaç�
 	novoVertice->nroVizinhos = 0;              // Número de vizinhos para a lista de adjacência
 	novoVertice->visitado = 0;                 // Funciona como uma variável booleana, avisando se o vértice já foi visitado
 	novoVertice->cor = 0;                      // Cor do vértice
+    novoVertice->lock = 0;
     novoVertice->vizinhos = (VERTICE*) malloc (max_arestas * sizeof(struct NO));    // Vértices adjacentes
     for (int i = 0; i < max_arestas; i++){      // Número máximo de vértices adjacentes
 		novoVertice->vizinhos[i] = NULL;
@@ -59,9 +60,32 @@ void LIMPA_VISITAS (VERTICE *GRAFO, int tam){   // Reseta o número de visitas d
 	}
 }
 void Colorindo (VERTICE *GRAFO, int tam){       // Função que encontra a menor cor possível para se colorir o vertice
-
+printf ("ENTROU!!!\n");
 int cor = 0;
 int cont = -1;
+
+if ((GRAFO[tam]->lock == 1)||(GRAFO[tam]->visitado == 1)){
+    return;
+}
+else{
+    for (int i = 0; i < GRAFO[tam]->nroVizinhos; i++){
+        if (GRAFO[tam]->vizinhos[i]->lock == 1 ){
+            return;
+        }
+    }
+}
+for (int i = 0; i < GRAFO[tam]->nroVizinhos; i++){
+        if (GRAFO[tam]->vizinhos[i]->lock == 1 ){
+            return;
+        }
+    }
+ printf ("\nOK LOCKANDO\n");
+
+GRAFO[tam]->lock = 1;
+for (int i = 0; i < GRAFO[tam]->nroVizinhos; i++){
+GRAFO[tam]->vizinhos[i]->lock = 1;
+}
+
 
 // É passado por referência um vértice GRAFO[tam], tal que para encontrar a menor cor possível que o colore, é feito um laço
 // que irá parar quando o contador "cont" for igual a zero. Toda vez que se inicia o laço, é incrementado a cor ( inicialmente setada como 0),
@@ -76,6 +100,12 @@ int cont = -1;
 		}
 	}
 	GRAFO[tam]->cor = cor;                      // Colorimos o vértice
+    GRAFO[tam]->visitado = 1;
+    
+    GRAFO[tam]->lock = 0;
+    for (int i = 0; i < GRAFO[tam]->nroVizinhos; i++){
+    GRAFO[tam]->vizinhos[i]->lock = 0;
+    }
 }
 
 int COR_MAX(VERTICE *GRAFO, int tam){           
@@ -153,12 +183,10 @@ int CLR_SEQUENCIAL(VERTICE *GRAFO){     // Heurística de coloração gulosa que
     int cor = 0;
 
     for (int i = 0; i <= numv; i++){
-        Colorindo(GRAFO,i);
 		if (GRAFO[i]->cor > cor){
 			cor = GRAFO[i]->cor;
 		}
     }
-
     printf ("\nCor Mínima: Coloração Sequencial =  %d\n",cor);
 
     return cor;
@@ -260,6 +288,36 @@ printf("worker %d (pthread id %d) has started\n", myid, pthread_self());
         }
 
     CLR_BACKTRACK(CLR3,row);
+    }
+}
+
+void *Worker2(void *arg){
+    int *myid = arg;
+    int vertice;
+
+#ifdef DEBUG
+printf("worker %d (pthread id %d) has started\n", myid, pthread_self());
+#endif
+
+
+    while(1){
+    /* Get task from bag */
+    pthread_mutex_lock(&bagLock);
+    
+    printf ("!!!%d\n", *myid);
+    vertice = nextVertice;
+    printf ("???ROW = %d\n", vertice);
+    nextVertice++;
+
+    pthread_mutex_unlock(&bagLock);
+
+    /* If we are already finished with the bag, lets break out of the while loop */    
+        if(vertice >= numv){
+            printf ("$$$$ACABOU\n");
+        break;
+        }
+
+    Colorindo(CLR1,vertice);
     }
 }
 void *funcao(void *arg){

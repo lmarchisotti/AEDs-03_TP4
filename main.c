@@ -4,8 +4,12 @@ int main(int argc, char *argv[]){
     Argumentos(argc, argv);
 
     int ID[MAXWORKERS];
+    int ID2[MAXWORKERS];
+
     nextRow = 1;
+    nextVertice = 0;
     numArrived = 0;
+    numWorkers = MAXWORKERS;
 
     pthread_attr_t attr;
     pthread_t workerid[MAXWORKERS];
@@ -28,8 +32,8 @@ int main(int argc, char *argv[]){
     struct timeval usu_comeco_seq, usu_fim_seq;         // Struct utilizada para marcar o começo e o fim da contagem
     struct timeval sis_comeco_seq, sis_fim_seq;         // de tempo do Algoritmo de Coloração Sequencial
 
-    struct timeval usu_comeco_heu, usu_fim_heu;         // Struct utilizada para marcar o começo e o fim da contagem
-    struct timeval sis_comeco_heu, sis_fim_heu;         // de tempo do Algoritmo de Coloração Heurística
+    // struct timeval usu_comeco_heu, usu_fim_heu;         // Struct utilizada para marcar o começo e o fim da contagem
+    // struct timeval sis_comeco_heu, sis_fim_heu;         // de tempo do Algoritmo de Coloração Heurística
 
     struct timeval usu_comeco_back, usu_fim_back;       // Struct utilizada para marcar o começo e o fim da contagem
     struct timeval sis_comeco_back, sis_fim_back;       // de tempo do Algoritmo de Coloração com Backtracking
@@ -39,14 +43,21 @@ int main(int argc, char *argv[]){
 
     // COLORAÇÂO SEQUENCIAL
 
-    VERTICE *CLR1 = Leitura(string_i);                  // É feito a leitura do arquivo de entrada e seu grafo resultante é 
+    CLR1 = Leitura(string_i);                           // É feito a leitura do arquivo de entrada e seu grafo resultante é 
                                                         // gravado em um vetor que será recebido pelo ponteiro CLR1
     getrusage(RUSAGE_SELF, &usage);                     // Função que irá fazer a contagem de tempo do usuário e do sistema 
     
     usu_comeco_seq = usage.ru_utime;                    // Inicia a contagem do tempo usuário para o Algoritmo de Coloração Sequencial
     sis_comeco_seq = usage.ru_stime;                    // Inicia a contagem do tempo sistema para o Algoritmo de Coloração Sequencial
     
-    CLR_SEQUENCIAL(CLR1);                               // Algoritmo de Coloração Sequencial
+    for (int l = 0; l < numWorkers; l++){
+        ID2[l] = l+1;
+        pthread_create(&workerid[l], &attr, Worker2, (void*)&ID2[l]);
+    }
+    for (int l = 0; l < numWorkers; l++){
+        pthread_join(workerid[l], NULL);
+    }
+    CLR_SEQUENCIAL(CLR1);
 
     getrusage(RUSAGE_SELF, &usage);                     // Finaliza a contagem do tempo e retorna o tempo gasto executando do algoritmo 
     usu_fim_seq = usage.ru_utime;                       // Tempo total executando o algoritmo
@@ -57,20 +68,20 @@ int main(int argc, char *argv[]){
 
     // COLORAÇÂO HEURISTICA
 
-    VERTICE *CLR2 = Leitura(string_i);                  // É feito a leitura do arquivo de entrada e seu grafo resultante é 
-                                                        // gravado em um vetor que será recebido pelo ponteiro CLR1
-    getrusage(RUSAGE_SELF, &usage);                     // Função que irá fazer a contagem de tempo do usuário e do sistema
-    usu_comeco_heu = usage.ru_utime;                    // Inicia a contagem do tempo usuário para o Algoritmo de Coloração Heurística
-    sis_comeco_heu = usage.ru_stime;                    // Inicia a contagem do tempo sistema para o Algoritmo de Coloração Heurística
+    // VERTICE *CLR2 = Leitura(string_i);                           // É feito a leitura do arquivo de entrada e seu grafo resultante é 
+    //                                                     // gravado em um vetor que será recebido pelo ponteiro CLR1
+    // getrusage(RUSAGE_SELF, &usage);                     // Função que irá fazer a contagem de tempo do usuário e do sistema
+    // usu_comeco_heu = usage.ru_utime;                    // Inicia a contagem do tempo usuário para o Algoritmo de Coloração Heurística
+    // sis_comeco_heu = usage.ru_stime;                    // Inicia a contagem do tempo sistema para o Algoritmo de Coloração Heurística
     
-    CLR_HEURISTICA(CLR2);                               // Algoritmo de Coloração Heurística
+    // CLR_HEURISTICA(CLR2);                               // Algoritmo de Coloração Heurística
     
-    getrusage(RUSAGE_SELF, &usage);                     // Função que irá fazer a contagem de tempo do usuário e do sistema
-    usu_fim_heu = usage.ru_utime;                       // Tempo total executando o algoritmo
-    sis_fim_heu = usage.ru_stime;                       // Tempo real que o sistema gastou executando o algoritmo
+    // getrusage(RUSAGE_SELF, &usage);                     // Função que irá fazer a contagem de tempo do usuário e do sistema
+    // usu_fim_heu = usage.ru_utime;                       // Tempo total executando o algoritmo
+    // sis_fim_heu = usage.ru_stime;                       // Tempo real que o sistema gastou executando o algoritmo
 
-    Imprimir_usuario(usu_comeco_heu, usu_fim_heu);          // Imprime o tempo de leitura, processamento e total
-    Imprimir_sistema(sis_comeco_heu, sis_fim_heu);          // Imprime o tempo do sistema
+    // Imprimir_usuario(usu_comeco_heu, usu_fim_heu);          // Imprime o tempo de leitura, processamento e total
+    // Imprimir_sistema(sis_comeco_heu, sis_fim_heu);          // Imprime o tempo do sistema
 
     // COLORAÇÂO BACKTRACKING                           
 
@@ -81,8 +92,7 @@ int main(int argc, char *argv[]){
     usu_comeco_back = usage.ru_utime;                   // Inicia a contagem do tempo usuário para o Algoritmo de Coloração com Backtracking
     sis_comeco_back = usage.ru_stime;                   // Inicia a contagem do tempo sistema para o Algoritmo de Coloração com Backtracking
 
-    cormax = max_arestas; // Variável Global que receberá o valor mínimo cromático do grafo
-    numWorkers = MAXWORKERS;
+    cormax = numv; // Variável Global que receberá o valor mínimo cromático do grafo
 
     for (int l = 0; l < numWorkers; l++){
         ID[l] = l+1;
